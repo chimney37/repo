@@ -10,51 +10,49 @@ namespace ConsoleApplication1
     {
         public static int solution_FishAlive2(int[] A, int[] B)
         {
-            Stack<int> upstreamfishidx = new Stack<int>();
-            Stack<int> downstreamfishidx = new Stack<int>();
-
-            int alivecnt = A.Length;
+            //implementation of codility solution in C# based on http://rafal.io/posts/codility-fish.html
+            Stack<int> stack = new Stack<int>();
 
             //populate the stack
-            int j = A.Length - 1;
             for (int i = 0; i < A.Length; i++)
             {
-                if (B[i] != 0)
-                    downstreamfishidx.Push(i);
+                int curfishdir = B[i];
+                int curfishsize = A[i];
 
-                if (B[j] == 0)
-                    upstreamfishidx.Push(j--);
-            }
-
-            //loop will only be alive when either the downstream or upstream fish runs out. SO we don't have to check N*N-1
-            while (downstreamfishidx.Any() && upstreamfishidx.Any())
-            {
-                int downfish = downstreamfishidx.Peek();
-                int upfish = upstreamfishidx.Peek();
-
-                //only when upfish meet downfish
-                if (upfish > downfish)
-                {
-                    //upfish dies, downfish lives
-                    if (A[downfish] > A[upfish])
-                    {
-                        upstreamfishidx.Pop();
-                        alivecnt--;
-                    }
-                    //upfish lives, downfish dies
-                    else
-                    {
-                        downstreamfishidx.Pop();
-                        alivecnt--;
-                    }
-                }
+                if (!stack.Any())
+                    stack.Push(i);
                 else
                 {
-                    upstreamfishidx.Pop();
-                }
+                    //condition 1: if there's downstream fish on the stack
+                    //condition 2 : if there is a fish going downstream on the stack and meets the current one that goes upstream
+                    //condition 3 : if the downstream fish is smaller than the current fish going upstream
+                    while (stack.Any() &&
+                           curfishdir - B[stack.Peek()] == -1 &&
+                           A[stack.Peek()] < curfishsize)
+                    {
+                        //kill the downstream fish
+                        stack.Pop();
+                    }
 
+                    //if not empty
+                    if (stack.Any())
+                    {
+                        //if the fish on the stack is going upstream but is already pass the position of the current fish, if going downstream
+                        //then, keep the fish as being alive by pushing it on stack
+                        if (curfishdir - B[stack.Peek()] != -1)
+                            stack.Push(i);
+                    }
+                    //else if fishstack is empty, push the fish which is still alive
+                    else
+                    {
+                        stack.Push(i);
+                    }
+
+                }
             }
-            return alivecnt;
+
+
+            return stack.Count;
         }
 
     }
